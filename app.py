@@ -1,18 +1,6 @@
 import streamlit as st
 import joblib
 import numpy as np
-import pandas as pd
-from sklearn.preprocessing import LabelEncoder
-
-# Load the training dataset (used during model training)
-df = pd.read_csv("Titanic-Dataset.csv")  # Replace with actual CSV used in training
-
-# Fit the encoder on the 'Sex' column
-sex_encoder = LabelEncoder()
-sex_encoder.fit(df['Sex'])
-
-# Save the fitted encoder
-joblib.dump(sex_encoder, 'sex_encoder.pkl')
 
 # Load model and encoder
 model = joblib.load('titanic_model.pkl')
@@ -27,11 +15,14 @@ sibsp = st.number_input("Number of Siblings/Spouses Aboard", min_value=0, max_va
 parch = st.number_input("Number of Parents/Children Aboard", min_value=0, max_value=6, value=0)
 
 if st.button("Predict"):
-    sex_encoded = sex_encoder.transform([sex])[0]
-    features = np.array([[pclass, age, sex_encoded, sibsp, parch]])
-    prediction = model.predict(features)[0]
-    
-    if prediction == 1:
-        st.success("Survived")
-    else:
-        st.error("Did not survive")
+    try:
+        sex_encoded = sex_encoder.transform([sex])[0]
+        features = np.array([[pclass, age, sex_encoded, sibsp, parch]])
+        prediction = model.predict(features)[0]
+        
+        if prediction == 1:
+            st.success("Survived")
+        else:
+            st.error("Did not survive")
+    except Exception as e:
+        st.error(f"Prediction failed: {e}")
